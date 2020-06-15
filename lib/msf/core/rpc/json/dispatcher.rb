@@ -1,4 +1,6 @@
 require 'json'
+# akkuman-change
+require 'yajl'
 require 'msf/core/rpc'
 
 module Msf::RPC::JSON
@@ -158,7 +160,9 @@ module Msf::RPC::JSON
     def self.to_json(data)
       return nil if data.nil?
 
-      json = data.to_json
+      # akkuman-change
+      json = Yajl::Encoder.encode(data)
+      # json = data.to_json
       return json.to_s
     end
 
