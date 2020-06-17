@@ -148,7 +148,10 @@ module Msf::RPC::JSON
     # @return [Hash or Array] Hash or Array representation of source
     def parse_json_request(source)
       begin
-        JSON.parse(source, symbolize_names: true)
+        # akkuman-chabge
+        # JSON.parse(source, symbolize_names: true)
+        parser = Yajl::Parser.new(:symbolize_names => true)
+        parser.parse(source)
       rescue
         raise ParseError.new
       end
