@@ -279,6 +279,21 @@ class RPC_Session < RPC_Base
     { "result" => "success" }
   end
 
+
+  # akkuman-change
+  # Block execution command
+  #
+  # @note You should start rpc service with json-rpc multi threads, becaues this is a synchronization command to wait
+  # for the command to finish returning results.
+  # example:
+  # thin --rackup msf-json-rpc.ru --address 0.0.0.0 --port 8081 --environment development --tag msf-json-rpc --threaded start
+  #
+  # @param [Integer] sid Session ID.
+  # @param [String] data Input to the meterpreter prompt.
+  # @return [Hash] It contains the following key:
+  #  * 'data' [String] Data read.
+  # @example Here's how you would use this from the client:
+  #  rpc.call('session.meterpreter_execute', 2, "sysinfo")
   def rpc_meterpreter_execute(sid, data)
     s = _valid_session(sid, "meterpreter")
 
@@ -300,6 +315,21 @@ class RPC_Session < RPC_Base
       data = s.user_output.dump_buffer
       { "data" => data }
     }
+  end
+
+
+  # akkuman-change
+  # List all process from a meterpreter session
+  #
+  # @param [Integer] sid Session ID.
+  # @return [Hash]
+  # @example Here's how you would use this from the client:
+  #  rpc.call('session.meterpreter_ps', 2, "somechar")
+  def rpc_meterpreter_ps(sid)
+    s = _valid_session(sid, "meterpreter")
+    all_processes = s.console.client.sys.process.get_processes
+
+    { "data" => all_processes }
   end
 
 
