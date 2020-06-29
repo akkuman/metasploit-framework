@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 # -*- coding: binary -*-
+# akkuman-change
 #
 # $Id$
 #
@@ -136,6 +137,9 @@ if $PROGRAM_NAME == __FILE__
   foreground = false
   json_rpc = false
   frameworkOpts = {}
+  # akkuman-change
+  json_rpc_token = nil
+  stop_json_rpc = false
 
   opts = {
       'RunInForeground' => true,
@@ -161,7 +165,10 @@ if $PROGRAM_NAME == __FILE__
       "-k" => [ false, "(JSON-RPC) Path to private key (default: #{ws_ssl_key_default})"   ],
       "-c" => [ false, "(JSON-RPC) Path to certificate (default: #{ws_ssl_cert_default})"  ],
       "-v" => [ false, "(JSON-RPC) SSL enable verify (optional) client cert requests"      ],
-      "-h" => [ false, "Help banner"                                                       ])
+      "-h" => [ false, "Help banner"                                                       ],
+      # akkuman-change
+      "-s" => [false, "(JSON-RPC) Stop JSON_RPC server"],
+      "-T" => [true, "(JSON-RPC) Specify the token to access JSON-RPC"])
 
   # Parse command line arguments.
   arguments.parse(ARGV) { |opt, idx, val|
@@ -192,6 +199,11 @@ if $PROGRAM_NAME == __FILE__
       ws_ssl_cert = val
     when "-v"
       ssl_enable_verify = true
+    # akkuman-change
+    when "-T"
+      json_rpc_token = val
+    when "-s"
+      stop_json_rpc = true
     when "-h"
       print("\nUsage: #{File.basename(__FILE__)} <options>\n" +	arguments.usage)
       exit
@@ -201,8 +213,34 @@ if $PROGRAM_NAME == __FILE__
   $0 = "msfrpcd"
 
   begin
+    if stop_json_rpc
+      ws_conf_full_path = File.expand_path(File.join(File.dirname(msfbase), WS_CONF))
+      if !opts['SSL']
+        ws_ssl_key        = nil
+        ws_ssl_cert       = nil
+        ssl_enable_verify = false
+      else
+        if !File.file?(ws_ssl_key_default) || !File.file?(ws_ssl_cert_default)
+          $stdout.puts "[-] It doesn't appear msfdb has been run; please run 'msfdb init' first."
+          abort
+        end
+      end
+      stop_json_rpc_service(conf:               ws_conf_full_path,
+                            address:            opts['ServerHost'],
+                            port:               opts['ServerPort'],
+                            ssl:                opts['SSL'],
+                            ssl_key:            ws_ssl_key,
+                            ssl_cert:           ws_ssl_cert,
+                            ssl_disable_verify: !ssl_enable_verify,
+                            daemonize:          !foreground,
+                            log:                ws_log,
+                            pid:                ws_rpc_pid)
+      return
+    end
     if json_rpc
-
+      # set the json_rpc_api_token
+      ENV['MSF_WS_JSON_RPC_API_TOKEN'] = json_rpc_token || ENV['MSF_WS_JSON_RPC_API_TOKEN']
+      $stdout.puts "json_rpc_token #{ENV['MSF_WS_JSON_RPC_API_TOKEN']}"
       if !File.file?(ws_ssl_key_default) || !File.file?(ws_ssl_cert_default)
         $stdout.puts "[-] It doesn't appear msfdb has been run; please run 'msfdb init' first."
         abort
