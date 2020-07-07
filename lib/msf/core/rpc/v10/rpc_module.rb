@@ -7,6 +7,13 @@ module Msf
 module RPC
 class RPC_Module < RPC_Base
 
+  # Returns a list of all module info
+  #
+  #  rpc.call('module.allinfo')
+  def rpc_allinfo
+    Msf::Modules::Metadata::Cache.instance.get_metadata
+  end
+
   # Returns a list of exploit names. The 'exploit/' prefix will not be included.
   #
   # @return [Hash] A list of exploit names. It contains the following key:
