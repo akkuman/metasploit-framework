@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# akkuman-change
 
 require 'fileutils'
 require 'io/console'
@@ -251,7 +252,8 @@ def init_db
   puts 'Creating database users'
   run_psql("create user #{@options[:msf_db_user]} with password '#{@msf_pass}'")
   run_psql("create user #{@options[:msftest_db_user]} with password '#{@msftest_pass}'")
-  run_psql("alter role #{@options[:msf_db_user]} createdb")
+  # akkuman-change
+  run_psql("alter role #{@options[:msf_db_user]} SUPERUSER")
   run_psql("alter role #{@options[:msftest_db_user]} createdb")
   run_psql("alter role #{@options[:msf_db_user]} with password '#{@msf_pass}'")
   run_psql("alter role #{@options[:msftest_db_user]} with password '#{@msftest_pass}'")
