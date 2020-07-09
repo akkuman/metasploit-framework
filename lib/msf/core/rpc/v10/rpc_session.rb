@@ -296,6 +296,8 @@ class RPC_Session < RPC_Base
   #  rpc.call('session.meterpreter_execute', 2, "sysinfo")
   def rpc_meterpreter_execute(sid, data)
     s = _valid_session(sid, "meterpreter")
+    s.console.block_command('edit')
+    s.console.block_command('shell')
 
     s.single_session_mutex.synchronize {
       if not s.user_output.respond_to? :dump_buffer
