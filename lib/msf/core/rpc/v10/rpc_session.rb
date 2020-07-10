@@ -334,6 +334,25 @@ class RPC_Session < RPC_Base
     { "data" => all_processes }
   end
 
+  #  rpc.call('session.meterpreter_edit_file', 3, 'a.txt', 'aaaa')
+  def rpc_meterpreter_edit_file(sid, filepath, filecontent)
+    s = _valid_session(sid,"meterpreter")
+
+    # Get a temporary file path
+    meterp_temp = Tempfile.new('meterp_edit_temp')
+    temp_path = meterp_temp.path
+
+    meterp_temp.write(filecontent)
+    meterp_temp.rewind
+
+    s.fs.file.upload_file(filepath, temp_path)
+
+    meterp_temp.close
+    ::File.delete(temp_path) rescue nil
+
+    { "result" => "success" }
+  end
+
 
   # Detaches from a meterpreter session. Serves the same purpose as [CTRL]+[Z].
   #
