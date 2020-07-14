@@ -220,7 +220,7 @@ if $PROGRAM_NAME == __FILE__
         ws_ssl_cert       = nil
         ssl_enable_verify = false
       else
-        if !File.file?(ws_ssl_key_default) || !File.file?(ws_ssl_cert_default)
+        if opts['SSL'] && (!File.file?(ws_ssl_key_default) || !File.file?(ws_ssl_cert_default))
           $stdout.puts "[-] It doesn't appear msfdb has been run; please run 'msfdb init' first."
           abort
         end
@@ -241,7 +241,7 @@ if $PROGRAM_NAME == __FILE__
       # set the json_rpc_api_token
       ENV['MSF_WS_JSON_RPC_API_TOKEN'] = json_rpc_token || ENV['MSF_WS_JSON_RPC_API_TOKEN']
       $stdout.puts "json_rpc_token #{ENV['MSF_WS_JSON_RPC_API_TOKEN']}"
-      if !File.file?(ws_ssl_key_default) || !File.file?(ws_ssl_cert_default)
+      if opts['SSL'] && (!File.file?(ws_ssl_key_default) || !File.file?(ws_ssl_cert_default))
         $stdout.puts "[-] It doesn't appear msfdb has been run; please run 'msfdb init' first."
         abort
       end
