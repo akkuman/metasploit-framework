@@ -180,6 +180,94 @@ class RPC_Core < RPC_Base
     { "result" => "success" }
   end
 
+  # akkuman-change
+  # List file for loot_directory
+  #
+  # @example Here's how you would use this from the client:
+  # rpc.call('core.loot_list')
+  def rpc_loot_list
+    fileList = []
+    Dir.foreach(Msf::Config.loot_directory) do |file|
+
+      filepath = File.join(Msf::Config.loot_directory, file)
+      if file != "." and file != ".." and File.file?(filepath)
+        filesize = File.size(filepath)
+        mtime    = File.mtime(filepath).to_i
+        fileList = fileList.push({:name => file, :size => filesize, :mtime => mtime})
+      end
+    end
+    fileList
+  end
+
+  # akkuman-change
+  # upload a file to loot_directory
+  #
+  # @param [String] filename the filename which you want to upload to loot dir
+  # @param [String] data the content of file which is base64 encode
+  # @return [Hash]
+  #  * 'result' [Boolean] Is the upload successful
+  #
+  # @example Here's how you would use this from the client:
+  # rpc.call('core.loot_upload', '1.txt', 'aGVsbG93b3JsZA==')
+  def rpc_loot_upload(filename, data)
+
+    begin
+      filename   = filename.delete('/\\')
+      local_path = File.join(Msf::Config.loot_directory, filename)
+
+      binary_data = Base64.decode64(data)
+      hostsfile   = File.open(local_path, 'wb')
+      hostsfile.write(binary_data)
+      hostsfile.close()
+    rescue ::Exception
+      {:result => false}
+    end
+    {:result => true}
+  end
+
+  # akkuman-change
+  # download a file from loot directory
+  #
+  # @param [String] filename the filename you want to download from loot directory
+  # @return [Hash]
+  #  * 'result' [Boolean] Is the upload successful
+  #  * 'data' [String] the content of file which is base64 encode
+  #
+  # @example Here's how you would use this from the client:
+  # rpc.call('core.loot_download', '1.txt')
+  def rpc_loot_download(filename)
+    filename   = filename.delete('/\\')
+    local_path = File.join(Msf::Config.loot_directory, filename)
+    if File.file?(local_path)
+      binary_data = File.read(local_path, mode: "rb")
+      base64_data = Base64.strict_encode64(binary_data)
+      {:result => true, :data => base64_data}
+    else
+      {:result => false, :data => nil}
+    end
+
+  end
+
+  # akkuman-change
+  # destroy a file from loot directory
+  #
+  # @param [String] filename the filename you want to destroy from loot directory
+  # @return [Hash]
+  #  * 'result' [Boolean] Is the destroy successful
+  #
+  # @example Here's how you would use this from the client:
+  # rpc.call('core.loot_destroy', '1.txt')
+  def rpc_loot_destroy(filename)
+    filename   = filename.delete('/\\')
+    local_path = File.join(Msf::Config.loot_directory, filename)
+    if File.file?(local_path)
+      File.delete(local_path)
+      {:result => true}
+    else
+      {:result => false}
+    end
+  end
+
 end
 end
 end

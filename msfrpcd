@@ -238,12 +238,21 @@ if $PROGRAM_NAME == __FILE__
       return
     end
     if json_rpc
+      # akkuman-change
       # set the json_rpc_api_token
       ENV['MSF_WS_JSON_RPC_API_TOKEN'] = json_rpc_token || ENV['MSF_WS_JSON_RPC_API_TOKEN']
       $stdout.puts "json_rpc_token #{ENV['MSF_WS_JSON_RPC_API_TOKEN']}"
       if opts['SSL'] && (!File.file?(ws_ssl_key_default) || !File.file?(ws_ssl_cert_default))
         $stdout.puts "[-] It doesn't appear msfdb has been run; please run 'msfdb init' first."
         abort
+      end
+
+      # akkuman-change
+      # check or make loot_directory
+      loot_directory = Msf::Config.loot_directory
+      unless ::File.directory? loot_directory
+        $stderr.puts "[+] Init Config Directory."
+        Msf::Config.init
       end
 
       $stderr.puts "[*] JSON-RPC starting on #{opts['ServerHost']}:#{opts['ServerPort']} (#{opts['SSL'] ? "SSL" : "NO SSL"})..."
